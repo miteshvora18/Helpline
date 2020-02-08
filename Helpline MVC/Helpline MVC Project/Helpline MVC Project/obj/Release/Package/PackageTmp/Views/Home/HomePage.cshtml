@@ -1,0 +1,182 @@
+﻿@model Helpline_MVC_Project.Models.UserDetailsAll
+
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    if (ViewBag.message != null)
+    {
+        <script type="text/javascript">
+            alert("@ViewBag.message");
+        </script>
+    }
+}
+
+<div>
+    <center>
+        <table width="80%" cellpadding="0" cellspacing="0" class="centerPage">
+            <tr>
+                <td colspan="2">
+                    @using (Html.BeginForm("HomePage", "Home", FormMethod.Post))
+                    {
+                        <table style="background-color:#f5f5f5;border:10px solid #f5f5f5;" width="100%">
+                            <tr>
+                                <td>
+                                    @Html.ActionLink("Home", "HomePage")
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit Profile", "EditProfile")
+                                </td>
+                                <td>
+                                    <input type="submit" value="Log Out" id="LogOut"/>
+                                </td>
+                            </tr>
+                        </table>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td id="lblUnreadMsg">
+                        
+                </td>
+            </tr>
+            <tr>
+                <td width="70%">
+                    <table width="98%" style="vertical-align:top;">
+                        <tr>
+                            <td style="width:30%" align="center">
+                                <img src="@Url.Content(ViewBag.ImageUrl)" alt="User Image" style="width:200px;height:200px;" />
+                            </td>
+                            <td align="center">
+                                @Html.DisplayFor(model => model.Name, new { style= "font-size:20px;" })
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <center>
+                                    <h3>Set Status</h3>
+                                    @using (Html.BeginForm("PostStatus", "Home", FormMethod.Post))
+                                    {
+                                        @Html.TextArea("txtPost", new { style = "min-width:300px;max-width:300px;min-height:50px;max-height:50px;"})
+                                        <input type="submit" value="Post" id="btnPost" style="height:26px;" />
+                                    }
+                                </center>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Status Updates..
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="tblStatusGrid" width="98%" style="vertical-align:top;">
+                        <tbody></tbody>
+                    </table>
+                </td>
+                <td>
+                    <table id="tblChat" width="100%">
+                        <tbody></tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </center>
+</div>
+
+@section scripts{ 
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //On page load
+            GetUnreadMsgList();
+            RefreshStatus();
+            ChatGrid();
+
+            //After every 3 sec
+            setInterval(function(){
+                GetUnreadMsgList();
+                RefreshStatus();
+                ChatGrid();
+            },3000);
+
+            //Message
+            function GetUnreadMsgList() {
+                $.post('RefreshUnreadMsg', function (data) {
+                    // Update the ItemList html element
+                    $('#lblUnreadMsg').html(data);
+                });
+            }
+
+            //Status Grid
+            function RefreshStatus() {
+                //$("#tblStatusGrid tbody tr").remove();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("RefreshStatus")',
+                    dataType: 'json',
+                    success: function (data) {
+                        var items = '';
+                        var appendRows = '';
+                        $.each($.parseJSON(data), function (i, item) {
+
+                            var date = addZero(new Date(item.ustatustime).getHours()) + ":" + addZero(new Date(item.ustatustime).getMinutes()) + " " + new Date(item.ustatustime).getDate() + "/" + new Date(item.ustatustime).getMonth() + "/" + new Date(item.ustatustime).getFullYear();
+ 
+                            var rows = "<tr>"
+                            +"<td width=\"150px\"><img src=\"/images/user_images/" + item.uimage + "\" alt=\"User Image\" style=\"width:100px;height:100px;\" /></td>"
+                            + "<td width=\"80px\">" + item.name + "</td>"
+                            + "<td>" + item.ustatus + "</td>"
+                            + "<td>" + date + "</td>"
+                            + "</tr>";
+                            appendRows = appendRows.concat(rows);
+                        });
+                        $('#tblStatusGrid tbody').html(appendRows);
+                    },
+                    error: function (ex) {
+                        var r = jQuery.parseJSON(response.responseText);
+                        alert("Message: " + r.Message);
+                        alert("StackTrace: " + r.StackTrace);
+                        alert("ExceptionType: " + r.ExceptionType);
+                    }
+                });
+                return false;
+            }
+
+            //Chat Grid
+            function ChatGrid() {
+                //$("#tblStatusGrid tbody tr").remove();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ChatGrid")',
+                    dataType: 'json',
+                    success: function (data) {
+                        var items = '';
+                        var appendRows = '';
+                        $.each($.parseJSON(data), function (i, item) {
+                            var rows = "<tr>"
+                            + "<td width=\"40px\"><img src=\"/images/user_images/" + item.uimage + "\" alt=\"User Image\" style=\"width:40px;height:40px;\" /></td>"
+                            + "<td width=\"80px\">" + '<a href="/Home/Message?uid=' + @Session["uid"].ToString() + '&touid=' + item.uid + '">' + item.name + "</a>" + "</td>" 
+                            if (item.uonline == 0)
+                                rows = rows.concat("<td width=\"10px\"><img src=\"/images/user-offline.png\"" + "\" alt=\"Image\" style=\"width:10px;height:10px;\" /></td>")
+                            else
+                                rows = rows.concat("<td width=\"10px\"><img src=\"/images/Online-Icon.png\"" + "\" alt=\"Image\" style=\"width:10px;height:10px;\" /></td>")
+                            rows = rows.concat("</tr>");
+                            appendRows = appendRows.concat(rows);
+                        });
+                        $('#tblChat tbody').html(appendRows);
+                    },
+                    error: function (ex) {
+                        var r = jQuery.parseJSON(response.responseText);
+                        alert("Message: " + r.Message);
+                        alert("StackTrace: " + r.StackTrace);
+                        alert("ExceptionType: " + r.ExceptionType);
+                    }
+                });
+            }
+        });
+
+        function addZero(i) {
+            if (i < 10) {
+                i = "0" + i;
+            }
+            return i;
+        }
+    </script>
+}

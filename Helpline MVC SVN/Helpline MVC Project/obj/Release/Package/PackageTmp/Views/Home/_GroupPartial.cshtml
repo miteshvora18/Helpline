@@ -1,0 +1,47 @@
+﻿@model Helpline_MVC_Project.Models.MultipleModel
+
+<div id="dialog-form" title="Add Group">
+    @using (Html.BeginForm("CreateGroup", "Home", FormMethod.Post, new { @id = "frmDialog", enctype = "multipart/form-data" }))
+    {
+        @*<p class="validateTips"></p>*@
+        <table>
+            <tr>
+                <td width="50%">
+                    <label for="groupname">Group Name</label>
+                </td>
+                <td>
+                    @Html.TextBoxFor(Model=>Model.group.GroupName, new { @class = "text ui-widget-content ui-corner-all" })
+                    @*<input type="text" name="groupname" id="groupname" value="" class="text ui-widget-content ui-corner-all">*@
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="icon">Group Icon</label>
+                </td>
+                <td>
+                    @Html.TextBoxFor(Model => Model.group.Icon, new { type = "file",@class= "text ui-widget-content ui-corner-all" })
+                    @*<input type="file" name="icon" id="icon" value="" class="text ui-widget-content ui-corner-all">*@
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="memberlist">Add Group Members</label>
+                </td>
+                <td>
+                    @Html.TextBoxFor(Model => Model.group.Memberlist, new { @class = "text ui-widget-content ui-corner-all" })
+                    @*<input type="text" name="memberlist" id="memberlist" value="" class="text ui-widget-content ui-corner-all">*@
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="right" style="padding-top:20px;">
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="top:-1000px" value="Submit">
+                    <br />
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                </td>
+            </tr>
+        </table>
+        @Html.HiddenFor(Model => Model.group.Memberlistid);
+    }
+</div>
+

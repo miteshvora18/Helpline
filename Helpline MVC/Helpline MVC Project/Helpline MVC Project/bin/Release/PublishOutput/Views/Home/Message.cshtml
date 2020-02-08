@@ -1,0 +1,129 @@
+﻿
+@{
+    ViewBag.Title = "Message";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    if (ViewBag.message != null)
+    {
+        <script type="text/javascript">
+            alert("@ViewBag.message");
+        </script>
+    }
+
+    if (ViewBag.PrevMsg != null)
+    {
+        <script type="text/javascript">
+            $('#tdPrevMsg').html(ViewBag.PrevMsg);
+        </script>
+    }
+}
+
+<div>
+    <center>
+        <table width="80%" cellpadding="0" cellspacing="0" class="centerPage">
+            <tr>
+                <td colspan="2">
+                    @using (Html.BeginForm("Message", "Home", FormMethod.Post))
+                    {
+                        <table style="background-color:#f5f5f5;border:10px solid #f5f5f5;" width="100%">
+                            <tr>
+                                <td>
+                                    @Html.ActionLink("Home", "HomePage")
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit Profile", "EditProfile")
+                                </td>
+                                <td>
+                                    <input type="submit" value="Log Out" id="LogOut" />
+                                </td>
+                            </tr>
+                        </table>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <center>
+                        <h3>Set Status</h3>
+                        @using (Html.BeginForm("PostMessage", "Home", FormMethod.Post))
+                        {
+                            @Html.Hidden("touid",@Request["touid"])
+                            @Html.TextArea("txtSend", new { style = "height:40px;width:296px;min-width:300px;max-width:300px;min-height:50px;max-height:50px;" })
+                            <input type="submit" value="Post" id="btnPost" style="height:26px;width:92px" />
+                        }
+                    </center>
+                </td>
+            </tr>
+            <tr>
+                <td id="tdPrevMsg">
+                    @Html.Display("lblPrevMsg")
+                </td>
+            </tr>
+        </table>
+    </center>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //On page load
+            ReadMsg();
+            Update();
+
+            //After every 3 sec
+            setInterval(function(){
+                Update();
+            },3000);
+        });
+
+        //Message
+
+        function ReadMsg() {
+            $.ajax({
+                url: '@Url.Action("ReadMsg")',
+                type: "POST",
+                data: ({ touid: getUrlVars()["touid"] }),
+                success: function (data) {
+                    //$('#lblPrevMsg').html(data);
+                },
+                error: function (data) {
+                    
+                }
+            });
+        }
+
+        function Update() {
+            $.ajax({
+                url: '@Url.Action("Update")',
+                type: "POST",
+                data: ({ touid:getUrlVars()["touid"] }),
+                success: function (data) {
+                    $('#tdPrevMsg').html(data);
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+
+        function addZero(i) {
+            if (i < 10) {
+                i = "0" + i;
+            }
+            return i;
+        }
+
+        // Read a page's GET URL variables and return them as an associative array.
+        function getUrlVars()
+        {
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+    </script>
+}

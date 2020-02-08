@@ -1,0 +1,537 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using Helpline_MVC_Project.BLL;
+using Helpline_MVC_Project.Models;
+using System.IO;
+
+namespace Helpline_MVC_Project.Controllers
+{
+    public class HomeController : Controller
+    {
+        BusinessLayer bl = new BusinessLayer();
+        // GET: Home
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Login(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                //Call Login Method
+                bool success = false;
+                Session["uid"] = bl.LoginMethod(user.Username, user.Password, out success);
+
+                if (success == true)
+                {
+                    return RedirectToAction("HomePage");
+                }
+                else
+                {
+                    ViewBag.message = Session["uid"].ToString();
+                    Session["uid"] = null;
+                    ModelState.Clear();
+                    return View();
+                }
+            }
+            return View();
+        }
+
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Register(UserDetailsAll user)
+        {
+            if (ModelState.IsValid)
+            {
+                //Call Register Method
+                bool success = false;
+                ViewBag.message = bl.RegisterMethod(user, out success);
+
+                if (success == true)
+                {
+                    ModelState.Clear();
+                    return View();
+                }
+            }
+            return View();
+        }
+
+        public ActionResult EditProfile()
+        {
+            bool success = false;
+            if (Session["uid"] != null)
+            {
+                int uid = Convert.ToInt32(Session["uid"].ToString());
+                UserDetailsAll ud = bl.GetUserDetails(uid, out success);
+
+                if (success == true)
+                {
+                    return View(ud);
+                }
+                else
+                {
+                    ViewBag.message = "Error occured while fetching details. Please contact admin.";
+                    return View();
+                }
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult EditProfile(UserDetailsAll user)
+        {
+            //Option 1 
+            //TryUpdateModel<UserDetailsAll>(user, null,
+            //    new string[] { "Name", "Email", "DOB", "College", "Branch", "Gender", "Image" },//Include these in ModelState.IsValid
+            //    new string[] { "Username", "Password", "c_pwd" });//Exclude these from ModelState.IsValid
+
+            //Option 2
+            ModelState.Remove("Username"); 
+            ModelState.Remove("Password");
+            ModelState.Remove("c_pwd");
+            ModelState.Remove("Image");
+
+            if (ModelState.IsValid)
+            {
+                //Call Register Method
+                bool success = false;
+                ViewBag.message = bl.UpdateUserDetails(user,Session["uid"].ToString(), out success);
+
+                if (success == true)
+                {
+                    return View();
+                }
+            }
+            return View();
+        }
+
+        public ActionResult HomePage()
+        {
+            bool success = false;
+            if (Session["uid"] != null)
+            {
+                int uid = Convert.ToInt32(Session["uid"].ToString());
+                UserDetailsAll ud = bl.GetUserDetails(uid, out success);
+                MultipleModel m = new MultipleModel();
+                Group g = new Group();
+                m.UserDetails = ud;
+                m.group = g;
+
+                if (success == true)
+                {
+                    bool success1 = false;
+                    string ImageUrl = bl.GetUserImage(uid, out success1);
+                    if (success1 == true)
+                    {
+                        ViewBag.ImageUrl = ImageUrl;
+                    }
+                    else
+                    {
+                        ViewBag.message = "Error occured while fetching image.";
+                    }
+                    if(TempData["message"] != null)
+                    {
+                        ViewBag.message = TempData["message"].ToString();
+                    }
+                    return View(m);
+                }
+                else
+                {
+                    ViewBag.message = "Error occured while fetching details. Please contact admin.";
+                    return View();
+                }
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult HomePage(string value)
+        {
+            bool success = false;
+            bl.LogOut(Session["uid"].ToString(), out success);
+            if (success == true)
+            {
+                Session["uid"] = null;
+                TempData["logOut"] = "true";
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                return View("HomePage");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult PostStatus(string txtPost)
+        {
+            if (txtPost != string.Empty)
+            {
+                //Call Register Method
+                bool success = false;
+                TempData["message"] = bl.UpdateStatus(txtPost, Session["uid"].ToString(), out success);
+
+                if (success == true)
+                {
+                    return RedirectToAction("HomePage");
+                }
+                return RedirectToAction("HomePage");
+            }
+            else
+            {
+                TempData["message"] = "Status cannot be empty";
+                return RedirectToAction("HomePage");
+            }
+        }
+
+        [HttpPost]
+        public string RefreshUnreadMsg()
+        {
+            bool success = false;
+            if (Session["uid"] != null)
+            {
+                string uid = Session["uid"].ToString();
+                string returnMsg = bl.UnreadList(uid, out success);
+                returnMsg = returnMsg + bl.UnreadGroupList(uid, out success);
+
+                if (success == true)
+                {
+                    return returnMsg;
+                }
+                else
+                {
+                    ViewBag.message = returnMsg;
+                }
+            }
+            return "";
+        }
+
+        [HttpPost]
+        public JsonResult RefreshStatus()
+        {
+            bool success = false;
+            string json = string.Empty;
+            if (Session["uid"] != null)
+            {
+                string uid = Session["uid"].ToString();
+                json = bl.RefreshStatus(out success);
+
+                if (success == true)
+                {
+                    return Json(json);
+                }
+                else
+                {
+                    return Json(json);
+                }
+            }
+            return Json(json);
+        }
+
+        [HttpPost]
+        public JsonResult ChatGrid()
+        {
+            bool success = false;
+            string json = string.Empty;
+            if (Session["uid"] != null)
+            {
+                string uid = Session["uid"].ToString();
+                json = bl.ChatGrid(Session["uid"].ToString(), out success);
+
+                if (success == true)
+                {
+                    return Json(json);
+                }
+                else
+                {
+                    return Json(json);
+                }
+            }
+            return Json(json);
+        }
+
+        [HttpPost]
+        public JsonResult ChatGroupGrid()
+        {
+            bool success = false;
+            string json = string.Empty;
+            if (Session["uid"] != null)
+            {
+                string uid = Session["uid"].ToString();
+                json = bl.ChatGroupGrid(Session["uid"].ToString(), out success);
+
+                if (success == true)
+                {
+                    return Json(json);
+                }
+                else
+                {
+                    return Json(json);
+                }
+            }
+            return Json(json);
+        }
+
+        //Message actions
+        public ActionResult Message()
+        {
+            if (Session["uid"] != null)
+            {
+                if (TempData["message"] != null)
+                {
+                    ViewBag.message = TempData["message"].ToString();
+                }
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult PostMessage(int touid, string txtSend)
+        {
+            string msg = string.Empty;
+            if (txtSend != string.Empty)
+            {
+                bool success = false;
+                
+                msg = bl.Send(Convert.ToInt32(Session["uid"].ToString()), touid, txtSend, out success);
+
+                if (success == true)
+                {
+                    ViewBag.PrevMsg = msg;
+                }
+                else
+                {
+                    ViewBag.message = msg;
+                }
+            }
+            else
+            {
+                ViewBag.message = "Message cannot be empty";
+            }
+            return RedirectToAction("Message", new { uid = Session["uid"].ToString(), touid });
+        }
+
+        [HttpPost]
+        public void ReadMsg(int touid)
+        {
+            bool success = false;
+            bl.ReadMsg(Convert.ToInt32(Session["uid"].ToString()), touid, out success);
+            if (success == false)
+            {
+                ViewBag.message = "Error occured.";
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Update(int touid)
+        {
+            string msg = string.Empty;
+            bool success = false;
+
+            msg = bl.Update(Convert.ToInt32(Session["uid"].ToString()), touid, out success);
+
+            if (success == true)
+            {
+                return Content(msg);
+            }
+            else
+            {
+                ViewBag.message = msg;
+                return RedirectToAction("Message");
+            }
+        }
+
+        //LogOut
+        [HttpPost]
+        public ActionResult Message(string value)
+        {
+            bool success = false;
+            bl.LogOut(Session["uid"].ToString(), out success);
+            if (success == true)
+            {
+                Session["uid"] = null;
+                TempData["logOut"] = "true";
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                return View("Message");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult CreateGroup(MultipleModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                bool success = false;
+                var list = model.group.Memberlistid.Distinct();
+                string result = string.Join("", list).TrimEnd(',');
+
+                model.group.Memberlistid = result;
+
+                bl.CreateGroup(Session["uid"].ToString(), model.group, out success);
+
+                if (success)
+                {
+                    TempData["message"] = "Group created successfully";
+                }
+                else
+                {
+                    TempData["message"] = "Error occured while creating Group";
+                }
+            }
+            
+            return RedirectToAction("HomePage");
+        }
+
+        [HttpPost]
+        public JsonResult GetUserList()
+        {
+            bool success = false;
+            string json = bl.ChatGrid(Session["uid"].ToString() ,out success);
+
+            return Json(json);
+        }
+
+        public ActionResult Groups(int gid)
+        {
+            if (Session["uid"] != null)
+            {
+                bool success;
+                string createdUser;
+                createdUser = bl.CreatedByGroup(gid, out success);
+                if (success)
+                    ViewBag.CreatedBy = createdUser;
+                return View(gid);
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GroupUserGrid(int groupId)
+        {
+            bool success = false;
+            string json = string.Empty;
+            if (Session["uid"] != null)
+            {
+                string uid = Session["uid"].ToString();
+                json = bl.GroupUserGrid(Session["uid"].ToString(), groupId, out success);
+
+                if (success == true)
+                {
+                    return Json(json);
+                }
+                else
+                {
+                    return Json(json);
+                }
+            }
+            return Json(json);
+        }
+
+        [HttpPost]
+        public ActionResult PostGroup(int groupId, string txtSendGroup)
+        {
+            string msg = string.Empty;
+            if (txtSendGroup != string.Empty)
+            {
+                bool success = false;
+
+                msg = bl.SendGroup(Session["uid"].ToString(), groupId, txtSendGroup, out success);
+
+                if (success == true)
+                {
+                    ViewBag.PrevMsg = msg;
+                }
+                else
+                {
+                    ViewBag.message = msg;
+                }
+            }
+            else
+            {
+                ViewBag.message = "Message cannot be empty";
+            }
+            return RedirectToAction("Groups", new { gid = groupId });
+        }
+        
+        [HttpPost]
+        public ActionResult UpdateGroup(int groupId)
+        {
+            if (Session["uid"] != null)
+            {
+                string msg = string.Empty;
+                bool success = false;
+
+                msg = bl.UpdateGroup(Session["uid"].ToString(), groupId, out success);
+
+                if (success == true)
+                {
+                    return Content(msg);
+                }
+                else
+                {
+                    ViewBag.message = msg;
+                    return RedirectToAction("Groups");
+                }
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult DeleteGroup(int groupId)
+        {
+            string msg = string.Empty;
+            bool success = false;
+
+            msg = bl.DeleteGroup(Session["uid"].ToString(), groupId, out success);
+
+            if (success == false)
+            {
+                ViewBag.message = msg;
+                return RedirectToAction("Groups", new { gid = groupId });
+            }
+            else
+            {
+                TempData["message"] = msg;
+                return RedirectToAction("HomePage");
+            }
+        }
+
+        [HttpPost]
+        public void ReadGroupMsg(int gid)
+        {
+            bool success = false;
+            bl.ReadGroupMsg(Convert.ToInt32(Session["uid"].ToString()), gid, out success);
+            if (success == false)
+            {
+                ViewBag.message = "Error occured.";
+            }
+        }
+    }
+}

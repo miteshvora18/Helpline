@@ -1,0 +1,169 @@
+﻿@model Helpline_MVC_Project.Models.UserDetailsAll
+
+@{ 
+    //List<SelectListItem> itemsDay = new List<SelectListItem>();
+    //List<SelectListItem> itemsMonth = new List<SelectListItem>();
+    //List<SelectListItem> itemsYear = new List<SelectListItem>();
+    //for (int i = 1; i <= 31; i++)
+    //{
+    //    itemsDay.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
+    //}
+    //for (int i = 1; i <= 12; i++)
+    //{
+    //    itemsMonth.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
+    //}
+    ////Age to be atleast 16
+    //for (int i = (DateTime.Now.Year-16); i >= 1900; i--)
+    //{
+    //    itemsYear.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
+    //}
+
+    List<SelectListItem> itemsBranch = new List<SelectListItem>();
+
+    itemsBranch.Add(new SelectListItem { Text = "BE IT", Value = "BE IT" });
+    itemsBranch.Add(new SelectListItem { Text = "BE EXTC", Value = "BE EXTC" });
+    itemsBranch.Add(new SelectListItem { Text = "Diploma IT", Value = "Diploma IT" });
+    itemsBranch.Add(new SelectListItem { Text = "Diploma EXTC", Value = "Diploma EXTC" });
+    itemsBranch.Add(new SelectListItem { Text = "Bsc IT", Value = "Bsc IT" });
+    itemsBranch.Add(new SelectListItem { Text = "Msc IT", Value = "Msc IT" });
+    itemsBranch.Add(new SelectListItem { Text = "MCA", Value = "MCA" });
+
+    List<SelectListItem> itemsGender = new List<SelectListItem>();
+
+    itemsGender.Add(new SelectListItem { Text = "Male", Value = "Male" });
+    itemsGender.Add(new SelectListItem { Text = "Female", Value = "Female" });
+}
+
+@using (Html.BeginForm("Register","Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <table>
+        <tr>
+            <td colspan="2">
+                <h2>Register</h2>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Name
+            </td>
+            <td>
+                @Html.TextBoxFor(Model => Model.Name)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Email
+            </td>
+            <td>
+                @Html.TextBoxFor(Model => Model.Email)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                DOB (DD/MM/YYYY)
+            </td>
+            <td>
+                @Html.TextBoxFor(model => model.DOB)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                College
+            </td>
+            <td>
+                @Html.TextBoxFor(Model => Model.College)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Branch
+            </td>
+            <td>
+                @Html.DropDownList("Branch", itemsBranch)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Gender
+            </td>
+            <td>
+                @Html.DropDownList("Gender", itemsGender)
+            </td>
+        </tr>
+        <tr>
+            <td class="style1">
+                Username
+            </td>
+            <td class="style1">
+                @Html.TextBoxFor(Model => Model.Username)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Password
+            </td>
+            <td>
+                @Html.PasswordFor(Model => Model.Password)
+            </td>
+        </tr>
+        <tr>
+            <td class="style2">
+                Confirm Password
+            </td>
+            <td class="style2">
+                @Html.PasswordFor(Model => Model.c_pwd)
+            </td>
+        </tr>
+        <tr>
+            <td class="style2">
+                Upload Image
+            </td>
+            <td class="style2">
+                @Html.TextBoxFor(Model => Model.Image, new { type= "file"})
+                @*<input type="file" name="fuImage" />*@
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Register"/>
+                <br />
+                @Html.ActionLink("Back to Login","Login")
+                <br />
+                @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @if (ViewBag.message != null && ViewBag.message != "")
+                {
+                    @ViewBag.message
+                }
+            </td>
+        </tr>
+    </table>
+}
+<style type="text/css">
+    .style1 {
+        height: 29px;
+        margin-left: 160px;
+    }
+
+    .style2 {
+        height: 29px;
+    }
+</style>
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#DOB').datepicker({
+                dateFormat: "dd-mm-yy",
+                showStatus: true,
+                showWeeks: true,
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "-100:+0", // last hundred years
+            });
+        });
+    </script>
+}

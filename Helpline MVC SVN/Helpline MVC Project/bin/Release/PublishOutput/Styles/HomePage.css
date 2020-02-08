@@ -1,0 +1,27 @@
+﻿input[type="submit"], input[type="button"] {
+    color: maroon;
+    background-color: #eaeaea;
+    font-size: 14px;
+    font-family: Comic Sans MS;
+}
+
+.ui-dialog-titlebar {
+    background-color: #f5f5f5;
+}
+
+.ui-dialog, .ui-dialog-buttonpane {
+    background-color: #eaeaea;
+}
+
+.ui-button .ui-icon, .ui-button:focus, .ui-icon:hover, .ui-widget-header .ui-icon {
+    background-image: url("../../images/ui-icons_777777_256x240.png") !important;
+}
+
+.validateTips {
+    border: 1px solid transparent;
+    padding: 0.3em;
+}
+
+.ui-widget {
+    font-family: 'Comic Sans MS';
+}

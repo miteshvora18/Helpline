@@ -1,0 +1,185 @@
+﻿@model Int32
+
+@{
+    ViewBag.Title = "Group";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    if (ViewBag.message != null)
+    {
+        <script type="text/javascript">
+            alert("@ViewBag.message");
+        </script>
+    }
+
+    if (ViewBag.PrevMsg != null)
+    {
+        <script type="text/javascript">
+            $('#tdPrevMsg').html(ViewBag.PrevMsg);
+        </script>
+    }
+
+    if (ViewBag.CreatedBy != null)
+    {
+        <script type="text/javascript">
+            $(document).ready(function () {
+                if (@ViewBag.CreatedBy !== @Session["uid"].ToString()){
+                    $('#deleteGroup').hide();
+                }
+            });
+        </script>
+    }
+}
+
+<div>
+    <center>
+        <table width="80%" cellpadding="0" cellspacing="0" class="centerPage">
+            <tr>
+                <td colspan="2">
+                    @using (Html.BeginForm("Message", "Home", FormMethod.Post))
+                    {
+                        <table style="background-color:#f5f5f5;border:10px solid #f5f5f5;" width="100%">
+                            <tr>
+                                <td>
+                                    @Html.ActionLink("Home", "HomePage")
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit Profile", "EditProfile")
+                                </td>
+                                <td>
+                                    <input type="submit" value="Log Out" id="LogOut" />
+                                </td>
+                            </tr>
+                        </table>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td width="70%">
+                    <center>
+                        <h3>Post Message</h3>
+                        @using (Html.BeginForm("PostGroup", "Home", FormMethod.Post))
+                        {
+                            @Html.Hidden("groupId", @Request["gid"])
+                            @Html.TextArea("txtSendGroup", new { style = "height:40px;width:296px;min-width:300px;max-width:300px;min-height:50px;max-height:50px;" })
+                            <input type="submit" value="Post" id="btnPostGroup" style="height:26px;width:92px" />
+                        }
+                    </center>
+                </td>
+                <td>
+                    @using (Html.BeginForm("DeleteGroup", "Home", FormMethod.Post))
+                    {
+                        @Html.Hidden("groupId", @Request["gid"])
+                        <input type="submit" id="deleteGroup" value="Delete Group" />
+                    }
+                    <br /><br />
+                    Group Members...
+                    <table id="tblGroupUser" width="100%">
+                        <tbody></tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td id="tdPrevMsg">
+                    @Html.Display("lblPrevMsg")
+                </td>
+            </tr>
+        </table>
+    </center>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //On page load
+            GroupUserGrid();
+            //ReadMsg();
+            UpdateGroup();
+
+            //After every 3 sec
+            setInterval(function(){
+                UpdateGroup();
+            },3000);
+        });
+
+        //Message
+        function GroupUserGrid() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GroupUserGrid")',
+                data: ({ groupId: getUrlVars()["gid"] }),
+                dataType: 'json',
+                success: function (data) {
+                    var items = '';
+                    var appendRows = '';
+                    $.each($.parseJSON(data), function (i, item) {
+                        var rows = "<tr>"
+                            + "<td width=\"40px\"><img src=\"/images/user_images/" + item.uimage + "\" alt=\"User Image\" style=\"width:40px;height:40px;\" /></td>"
+                            + "<td width=\"80px\">" +
+                            ((@Session["uid"].ToString() === item.uid) ? item.name : ('<a href="/Home/Message?uid=' + @Session["uid"].ToString() + '&touid=' + item.uid + '">' + item.name + "</a>")) + "</td>"
+                        if (item.uonline == 0)
+                            rows = rows.concat("<td width=\"10px\"><img src=\"/images/user-offline.png\"" + "\" alt=\"Image\" style=\"width:10px;height:10px;\" /></td>")
+                        else
+                            rows = rows.concat("<td width=\"10px\"><img src=\"/images/Online-Icon.png\"" + "\" alt=\"Image\" style=\"width:10px;height:10px;\" /></td>")
+                        rows = rows.concat("</tr>");
+                        appendRows = appendRows.concat(rows);
+                    });
+                    $('#tblGroupUser tbody').html(appendRows);
+                },
+                error: function (ex) {
+                    var r = jQuery.parseJSON(response.responseText);
+                    alert("Message: " + r.Message);
+                    alert("StackTrace: " + r.StackTrace);
+                    alert("ExceptionType: " + r.ExceptionType);
+                }
+            });
+        }
+
+        function ReadMsg() {
+            $.ajax({
+                url: '@Url.Action("ReadMsg")',
+                type: "POST",
+                data: ({ touid: getUrlVars()["touid"] }),
+                success: function (data) {
+
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+
+        function UpdateGroup() {
+            $.ajax({
+                url: '@Url.Action("UpdateGroup")',
+                type: "POST",
+                data: ({ groupId:getUrlVars()["gid"] }),
+                success: function (data) {
+                    $('#tdPrevMsg').html(data);
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+
+        function addZero(i) {
+            if (i < 10) {
+                i = "0" + i;
+            }
+            return i;
+        }
+
+        // Read a page's GET URL variables and return them as an associative array.
+        function getUrlVars()
+        {
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+    </script>
+}

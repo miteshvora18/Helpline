@@ -1,0 +1,58 @@
+﻿@model Helpline_MVC_Project.Models.User
+
+@{
+    ViewBag.Title = "Login Page";
+    if(TempData["logOut"] != null)
+    {
+        <script type="text/javascript">
+            alert("You are logged out successfully.");
+        </script>
+        TempData["logOut"] = null;
+    }
+
+    if(ViewBag.message != null)
+    {
+        <script type="text/javascript">
+            alert("@ViewBag.message");
+        </script>
+    }
+}
+
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+@using (Html.BeginForm("Login","Home",FormMethod.Post))
+{
+    <table>
+        <tr>
+            <td colspan="2" align="center">
+                <h2>Login</h2>
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(Model => Model.Username)</td>
+            <td>
+                @Html.TextBoxFor(Model=> Model.Username)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(Model => Model.Password)</td>
+            <td>
+                @Html.PasswordFor(Model => Model.Password)
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <input id="btnLogin" type="submit"  value="Submit" />
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                Not a Member Yet? 
+                @Html.ActionLink("Register Now","Register","Home")
+            </td>
+        </tr>
+    </table>
+}

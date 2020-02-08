@@ -1,0 +1,128 @@
+﻿@model Helpline_MVC_Project.Models.UserDetailsAll
+
+@{
+    List<SelectListItem> itemsBranch = new List<SelectListItem>();
+    itemsBranch.Add(new SelectListItem { Text = "BE IT", Value = "BE IT" });
+    itemsBranch.Add(new SelectListItem { Text = "BE EXTC", Value = "BE EXTC" });
+    itemsBranch.Add(new SelectListItem { Text = "Diploma IT", Value = "Diploma IT" });
+    itemsBranch.Add(new SelectListItem { Text = "Diploma EXTC", Value = "Diploma EXTC" });
+    itemsBranch.Add(new SelectListItem { Text = "Bsc IT", Value = "Bsc IT" });
+    itemsBranch.Add(new SelectListItem { Text = "Msc IT", Value = "Msc IT" });
+    itemsBranch.Add(new SelectListItem { Text = "MCA", Value = "MCA" });
+    if (!IsPost)
+    {
+        itemsBranch.Where(x => x.Value == Model.Branch && Model.Branch != null).FirstOrDefault().Selected = true;
+    }
+
+    List<SelectListItem> itemsGender = new List<SelectListItem>();
+
+    itemsGender.Add(new SelectListItem { Text = "Male", Value = "Male" });
+    itemsGender.Add(new SelectListItem { Text = "Female", Value = "Female" });
+
+    if (!IsPost)
+    {
+        itemsGender.Where(x => x.Value == Model.Gender && Model.Gender != null).FirstOrDefault().Selected = true;
+    }
+
+    ViewBag.Title = "EditProfile";
+    if (ViewBag.message != null)
+    {
+        <script type="text/javascript">
+            alert("@ViewBag.message");
+        </script>
+    }
+}
+
+<h2>EditProfile</h2>
+
+@using (Html.BeginForm("EditProfile", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <table>
+        @*<tr>
+            <td>Username</td>
+            <td>
+                @Html.TextBoxFor(model => model.Username, new { disabled = "disabled", @class = "form-control"  })
+            </td>
+        </tr>*@
+        <tr>
+            <td>Name</td>
+            <td>
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Email
+            </td>
+            <td>
+                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+            </td>
+        </tr>
+        <tr>
+            <td>
+                DOB
+            </td>
+            <td>
+                @Html.TextBoxFor(model => model.DOB, new { @class = "form-control" })
+            </td>
+        </tr>
+        <tr>
+            <td>College</td>
+            <td>
+                @Html.EditorFor(model => model.College, new { htmlAttributes = new { @class = "form-control" } })
+            </td>
+        </tr>
+        <tr>
+            <td>Branch</td>
+            <td>
+                @Html.DropDownList("Branch", itemsBranch, new { htmlAttributes = new { @class = "form-control" } })
+            </td>
+        </tr>
+        <tr>
+            <td>Gender</td>
+            <td>
+                @Html.DropDownList("Gender", itemsGender, new { htmlAttributes = new { @class = "form-control" } })
+            </td>
+        </tr>
+        <tr>
+            <td>Upload Image</td>
+            <td>
+                @Html.TextBoxFor(Model => Model.Image, new { type = "file" })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Save" class="btn btn-default" />
+                @Html.ActionLink("Back to Home","HomePage")
+                <br />
+                @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+            </td>
+        </tr>
+    </table>
+}
+<style type="text/css">
+    .style1 {
+        height: 29px;
+        margin-left: 160px;
+    }
+
+    .style2 {
+        height: 29px;
+    }
+</style>
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#DOB').datepicker({
+                dateFormat: "dd-mm-yy",
+                showStatus: true,
+                showWeeks: true,
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "-100:+0", // last hundred years
+            });
+        });
+    </script>
+}

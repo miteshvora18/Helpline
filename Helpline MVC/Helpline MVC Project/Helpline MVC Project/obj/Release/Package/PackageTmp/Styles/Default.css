@@ -1,0 +1,67 @@
+﻿body 
+{
+    font-family:Comic Sans MS;
+    margin:0;
+    padding:0;
+    border:0 none;
+    background-color:#93B888;
+}
+
+table tbody td
+{
+    border:0 none;
+}
+
+a
+{
+    color:#800000;
+    text-decoration:none;
+}
+
+a:hover
+{
+    text-decoration:underline !important;
+}
+
+#gvChat a
+{
+    color:#93b745;
+    text-decoration:none;
+}
+
+#gvChat 
+{
+    background-color: #808080;
+    margin-top:181px;
+}
+
+#gvChat tr:hover
+{
+    background-color:#010101;
+}
+
+#gvChat tbody td
+{
+    border:1px solid #800000;
+}
+
+.logout
+{
+    border: 0px none;
+    font-family: Comic Sans MS;
+    color: #800000;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration:none;
+}
+
+.logout:hover
+{
+    text-decoration:underline;
+}
+
+.centerPage
+{
+    border:1px solid #e0e0e0;
+    background-color:#eaeaea;
+}
